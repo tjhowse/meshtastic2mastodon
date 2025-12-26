@@ -21,23 +21,9 @@ func main() {
 	opts.SetPingTimeout(1 * time.Second)
 	opts.SetUsername(os.Getenv("MQTT_USERNAME"))
 	opts.SetPassword(os.Getenv("MQTT_PASSWORD"))
-	// opts.SetDefaultPublishHandler(f)
-	opts.SetConnectionLostHandler(func(client mqtt.Client, err error) {
-		log.Printf("Connection lost: %v. Attempting to reconnect...", err)
-		for {
-			// Attempt to reconnect every 5 seconds. Not sure if this will work well.
-			// TODO This needs to handle re-subscribing to topics. Perhaps
-			// that should happen at the library layer, not here.
-			if token := client.Connect(); token.Wait() && token.Error() != nil {
-				log.Printf("Reconnection failed: %v. Retrying in 5 seconds...", token.Error())
-				time.Sleep(5 * time.Second)
-				continue
-			}
-			log.Println("Reconnected to MQTT broker.")
-			break
-		}
-
-	})
+	opts.SetAutoReconnect(true)
+	opts.SetResumeSubs(true)
+	opts.SetCleanSession(false)
 
 	masto, err := NewMastodon(os.Getenv("MASTODON_SERVER"), os.Getenv("MASTODON_CLIENT_ID"), os.Getenv("MASTODON_CLIENT_SECRET"), os.Getenv("MASTODON_ACCESS_TOKEN"))
 	if err != nil {
