@@ -67,12 +67,19 @@ func main() {
 				} else {
 					textMsg = fmt.Sprintf("!%x: %s", packet.Packet.From, textMsg)
 				}
+				fmt.Printf("Channel %d: %s\n", packet.Packet.Channel, textMsg)
+				if packet.Packet.Channel != 0 {
+					// Not the main channel, don't post it to mastodon.
+					continue
+				}
+				// Prepend "MediumFast: " to the message
+				textMsg = "MediumFast: " + textMsg
+				// Post to Mastodon
 				if err := masto.PostStatus(textMsg); err != nil {
 					fmt.Printf("Error posting to Mastodon: %v\n", err)
 				} else {
 					fmt.Println("Posted to Mastodon successfully.")
 				}
-				fmt.Printf("Channel %d: %s\n", packet.Packet.Channel, textMsg)
 			case generated.PortNum_NODEINFO_APP:
 				userInfo := &generated.User{}
 				if err := proto.Unmarshal(decoded.Decoded.Payload, userInfo); err != nil {
